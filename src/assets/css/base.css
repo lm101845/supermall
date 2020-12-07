@@ -1,0 +1,67 @@
+/* 第一件事：引入normalize.css */
+@import "./normalize.css";
+
+/*:root -> 获取根元素html*/
+/* 元素前面的冒号表示伪类 */
+:root {
+  /* 这里面定义的其实是变量，这个是CSS里面定义变量的方式 */
+  /* 声明变量的时候，变量名前面要加两根连词线（--）*/
+  /* 在这里提前定义了一些变量，后面要用的时候，使用var()即可使用 */
+  --color-text: #666;
+  /* 文字颜色 */
+  --color-high-text: #ff5777;
+  /* 文字高亮时的颜色 */
+  --color-tint: #ff8198;
+  /* 设置类似导航时候的背景颜色的 */
+  --color-background: #fff;
+  /* 这个是设置的白色背景 */
+  --font-size: 14px;
+  /* 整体上应用程序大小为14px */
+  --line-height: 1.5;
+  /* 整体上行高为1.5倍 */
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  user-select: none; /* 禁止用户鼠标在页面上选中文字/图片等 */
+  -webkit-tap-highlight-color: transparent; /* webkit是苹果浏览器引擎，tap点击，highlight背景高亮，color颜色，颜色用数值调节 */
+  background: var(--color-background);
+  color: var(--color-text);
+  /* rem vw/vh */
+  width: 100vw;
+}
+
+a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.clear-fix::after {
+  clear: both;
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+}
+
+.clear-fix {
+  zoom: 1;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
