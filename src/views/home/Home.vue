@@ -14,6 +14,7 @@
     <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
     <!-- 但是这样写的话Home.vue里面的东西太多了，我们需要进行抽离 -->
     <!-- Home.vue文件里面只放一些主要的逻辑 -->
+    <recommend-view :recommends="recommends"/>
   </div>
 </template>
 
@@ -23,6 +24,8 @@ import NavBar from "components/common/navbar/NavBar";
 
 import HomeSwiper from "./childComps/HomeSwiper";
 // 这个就在当前文件里面，就不用别名了
+
+import RecommendView from './childComps/RecommendView'
 
 import { getHomeMultidata } from "network/home";
 // 因为这里我不需要export导出，所以可以用大括号。
@@ -37,7 +40,8 @@ export default {
   name: "Home",
   components: {
     NavBar,
-    HomeSwiper
+    HomeSwiper,
+    RecommendView
   },
   data() {
     // 需要用data这个东西把数据保存起来

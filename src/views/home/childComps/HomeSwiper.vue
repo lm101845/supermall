@@ -1,6 +1,7 @@
 <template>
+<!-- 这里是没有div的，而且不知道为什么轮播图总是总是显示不出来 -->
   <swiper>
-    <swiper-item v-for="item in banners">
+    <swiper-item v-for="item in banners" :key="item.index">
       <a :href="item.link">
         <img :src="item.image" alt="" />
       </a>
