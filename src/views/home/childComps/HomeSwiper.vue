@@ -19,7 +19,7 @@ export default {
     banners: {
       type: Array,
       default() {
-        return [];
+        return []
       }
     }
   },
@@ -30,4 +30,6 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>
