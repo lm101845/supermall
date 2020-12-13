@@ -134,7 +134,7 @@ import FeatureView from './childComps/FeatureView'
 import NavBar from "components/common/navbar/NavBar";
 import TabControl from "components/content/tabControl/TabControl"
 
-import { getHomeMultidata } from "network/home.js";
+import {getHomeMultidata,getHomeGoods} from "network/home.js";
 // 因为这里我不需要export导出，所以可以用大括号。
 
 // import Swiper from 'components/common/swiper/Swiper'
@@ -157,24 +157,43 @@ export default {
   data() {
     // 需要用data这个东西把数据保存起来
     return {
-      // result:null
-      // 这个变量属于组件，所以不会被回收
-      // 但是这样保存数据太乱了，所以我们需要单独保存
-      banners: [],
-      recommends: [],
-      // 这里面的数据是不会被销毁的
-      goods:{
-        'pop':{page:0,list:{}},
-        'news':{page:0,list:{}},
-        'sell':{page:0,list:{}},
-      }
+        // result:null
+        // 这个变量属于组件，所以不会被回收
+        // 但是这样保存数据太乱了，所以我们需要单独保存
+        banners: [],
+        recommends: [],
+        // 这里面的数据是不会被销毁的
+        goods:{
+          // 默认情况下没有任何数据的
+          // 默认把每个类型的第一页数据都请求下来
+          // 至于第二页，第三页，只有它们在选项中进行了上拉加载功能后才会把更多的数据请求到
+          'pop':{page: 0,list:[]},
+          'new':{page: 0,list:[]},
+          'sell':{page: 0,list:[]},
+        }
     };
   },
   created() {
-    // 等组件创建完成之后就发送网络请求，进行数据的展示
-    // 1.请求多个数据
-    getHomeMultidata().then(res => {
+    // created是个比较特殊的函数，它是当组件创建完后就会执行的函数
+    // 所以我们最好只在里面写主要逻辑
+    // 至于里面更加详细的逻辑的话，不要在里面写
+
+      // 等组件创建完成之后就发送网络请求，进行数据的展示
+      // 1.请求多个数据
       // getHomeMutidata()表示调用这个函数
+    this.getHomeMultidata()
+    // 详细的东西在methods里面写，这里只调用一下函数即可
+    // 因为函数名起的一样，所以你必须写this，否则它执行的是imports里面导入的函数
+
+    // 2.请求商品数据
+    this.getHomeGoods('pop')
+    this.getHomeGoods('new')
+    this.getHomeGoods('sell')
+  },
+
+  methods: {
+     getHomeMultidata(){
+        getHomeMultidata().then(res => {
       // 然后后面加上.then就可以拿到请求的数据了
       // console.log(res);
       // 但是数据在这里直接用不合适，无法保存
@@ -182,12 +201,25 @@ export default {
       // this.result = res;
       // this在箭头函数里面网上找作用域
       // created里面是有this的
-      this.banners = res.data.banner.list;
-      this.recommends = res.data.recommend.list;
-    });
-    // console.log(this.result);
-    // 不能这样验证数据是否存在，因为这是一个异步操作
-    // 在上面的函数没有执行完的时候就直接打印了，肯定是打印不到的
+      // console.log(this.result);
+      // 不能这样验证数据是否存在，因为这是一个异步操作
+      // 在上面的函数没有执行完的时候就直接打印了，肯定是打印不到的
+        this.banners = res.data.banner.list;
+        this.recommends = res.data.recommend.list;
+        });
+     },
+
+     getHomeGoods(type){
+        const page = this.goods[type].page + 1
+        getHomeGoods(type,page).then(res=>{
+            // console.log(res);
+            // 注意：res是局部变量，到时候函数执行完它会消失的
+            // 这里的res是pop的前30条数据，而且是第一页
+            this.goods[type].list.push(...res.data.list)
+            this.goods[type].page += 1
+            // 再做一件事情，把它的页码加1
+        })
+     }
   }
 };
 </script>
