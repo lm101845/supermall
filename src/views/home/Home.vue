@@ -16,6 +16,7 @@
     <!-- Home.vue文件里面只放一些主要的逻辑 -->
     <recommend-view :recommends="recommends"/>
     <feature-view/>
+    <tab-control class="tab-control" :titles="['流行', '新款', '精选']"/>
     <ul>
       <li>列表1</li>
       <li>列表2</li>
@@ -122,16 +123,17 @@
   </div>
 </template>
 
-<script>
-import NavBar from "components/common/navbar/NavBar";
+<script> 
 // 导入的东西很多，希望按顺序导入比较好
-
+// 相同的导入放到一块：独立组件放一块，公共组件放一块，方法放一块
 import HomeSwiper from "./childComps/HomeSwiper";
 // 这个就在当前文件里面，就不用别名了
-
 import RecommendView from './childComps/RecommendView'
-
 import FeatureView from './childComps/FeatureView'
+
+import NavBar from "components/common/navbar/NavBar";
+import TabControl from "components/content/tabControl/TabControl"
+
 import { getHomeMultidata } from "network/home.js";
 // 因为这里我不需要export导出，所以可以用大括号。
 
@@ -144,10 +146,13 @@ import { getHomeMultidata } from "network/home.js";
 export default {
   name: "Home",
   components: {
-    NavBar,
+    // 写组件的时候，最好也是物以类聚
+    // 和上面的import顺序最好保持一致
     HomeSwiper,
     RecommendView,
-    FeatureView
+    FeatureView,
+    NavBar,
+    TabControl
   },
   data() {
     // 需要用data这个东西把数据保存起来
@@ -156,8 +161,13 @@ export default {
       // 这个变量属于组件，所以不会被回收
       // 但是这样保存数据太乱了，所以我们需要单独保存
       banners: [],
-      recommends: []
+      recommends: [],
       // 这里面的数据是不会被销毁的
+      goods:{
+        'pop':{page:0,list:{}},
+        'news':{page:0,list:{}},
+        'sell':{page:0,list:{}},
+      }
     };
   },
   created() {
@@ -195,5 +205,13 @@ export default {
   right: 0;
   top: 0;
   z-index: 9;
+}
+
+.tab-control{
+  position: sticky;
+  /* 这个属性可以实现吸顶效果 */
+  /* 移动端用这个属性特别好，但是如果要适配ie的话，这个属性就不要乱用了 */
+  top: 44px;
+  /* 这个top属性是和sticky配套的 */
 }
 </style>
