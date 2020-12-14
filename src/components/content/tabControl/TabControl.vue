@@ -37,6 +37,8 @@ export default {
         itemClick(index){
             // 添加点击事件，点哪个哪个变红，下面有小横杠
             this.currentIndex = index;
+            // 把点击事件给传出去
+            this.$emit('tabClick',index)
         }
     },
 }       

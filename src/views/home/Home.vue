@@ -16,9 +16,15 @@
     <!-- Home.vue文件里面只放一些主要的逻辑 -->
     <recommend-view :recommends="recommends"/>
     <feature-view/>
-    <tab-control class="tab-control" :titles="['流行', '新款', '精选']"/>
-    <good-list :goods="goods['pop'].list"/>
+    <tab-control class="tab-control" 
+                 :titles="['流行', '新款', '精选']"
+                 @tabClick="tabClick"/>
+    <!-- <good-list :goods="goods['pop'].list"/> -->
+    <!-- 这个不要写死了 -->
+    <!-- 但是这个东西有点太长了，我们用计算属性比较好-->
     <!-- 这个是good-list,我写成了goods-list -->
+    <good-list :goods="showGoods"/>
+    <!-- 这样就变短了，就很好了 -->
   </div>
 </template>
 
@@ -73,8 +79,14 @@ export default {
           'pop':{page: 0,list:[]},
           'new':{page: 0,list:[]},
           'sell':{page: 0,list:[]},
-        }
+        },
+        currentType:'pop'
     };
+  },
+  computed:{
+    showGoods(){
+      return this.goods[this.currentType].list
+    }
   },
   created() {
     // created是个比较特殊的函数，它是当组件创建完后就会执行的函数
@@ -95,6 +107,23 @@ export default {
   },
 
   methods: {
+    // 事件监听相关的方法
+      tabClick(index){
+        // console.log(index);
+        switch(index){
+          case 0:
+            this.currentType = 'pop'
+            break
+          case 1:
+            this.currentType = 'new'
+            break
+          case 2:
+            this.currentType = 'sell'
+            // 因为我们现在没有其他情况，写不写default都可以
+            break
+        }
+      },
+    // 网络请求相关的方法
      getHomeMultidata(){
         getHomeMultidata().then(res => {
       // 然后后面加上.then就可以拿到请求的数据了
