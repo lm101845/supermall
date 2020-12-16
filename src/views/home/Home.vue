@@ -2,18 +2,21 @@
   <div id="home">
     <!-- 这里是首页，可以用id了 -->
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
-    <home-swiper :banners="banners" />
-    <!-- 以后这里要插入东西，所以要用双标签 -->
-    <!-- <swiper>
-      <swiper-item v-for="item in banners">
-        <a :href="item.link">
-          <img :src="item.image" alt="" />
-        </a>
-      </swiper-item>
-    </swiper> -->
-    <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
-    <!-- 但是这样写的话Home.vue里面的东西太多了，我们需要进行抽离 -->
-    <!-- Home.vue文件里面只放一些主要的逻辑 -->
+    <!-- 给它加上滚动框架 -->
+    <div class="wrap">
+      <div class="content">
+         <home-swiper :banners="banners" />
+          <!-- 以后这里要插入东西，所以要用双标签 -->
+          <!-- <swiper>
+            <swiper-item v-for="item in banners">
+              <a :href="item.link">
+                <img :src="item.image" alt="" />
+              </a>
+            </swiper-item>
+          </swiper> -->
+          <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
+          <!-- 但是这样写的话Home.vue里面的东西太多了，我们需要进行抽离 -->
+          <!-- Home.vue文件里面只放一些主要的逻辑 -->
     <recommend-view :recommends="recommends"/>
     <feature-view/>
     <tab-control class="tab-control" 
@@ -25,6 +28,8 @@
     <!-- 这个是good-list,我写成了goods-list -->
     <good-list :goods="showGoods"/>
     <!-- 这样就变短了，就很好了 -->
+      </div>
+    </div>
   </div>
 </template>
 
@@ -49,6 +54,9 @@ import {getHomeMultidata,getHomeGoods} from "network/home.js";
 // 如果没有swiper里的index.js文件，你需要像上面这样导入
 
 // import { Swiper, SwiperItem } from "components/common/swiper";
+
+// import BScroll from 'better-scroll'
+// 不要在组件里面直接使用better-scroll！！这样做有风险，到时候这个框架不再维护了修改就很难了
 
 export default {
   name: "Home",
