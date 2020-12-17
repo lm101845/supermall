@@ -1,11 +1,17 @@
 <template>
-  <div id="home">
+  <div id="home" class="wrapper">
     <!-- 这里是首页，可以用id了 -->
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
     <!-- 给它加上滚动框架 -->
-    <div class="wrap">
-      <div class="content">
-         <home-swiper :banners="banners" />
+    <!-- <div class="wrap">
+      <div class="content"> -->
+    <scroll class="content"
+            ref="scroll"
+            :probe-type="3"
+          <!-- <div ref="aaa"></div> -->
+          <!-- div这种普通元素上面其实也是可以绑定ref的 -->
+          <!-- 这个scroll组件是要给自己设置高度的，不要忘了 -->
+          <home-swiper :banners="banners"/>
           <!-- 以后这里要插入东西，所以要用双标签 -->
           <!-- <swiper>
             <swiper-item v-for="item in banners">
@@ -17,19 +23,26 @@
           <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
           <!-- 但是这样写的话Home.vue里面的东西太多了，我们需要进行抽离 -->
           <!-- Home.vue文件里面只放一些主要的逻辑 -->
-    <recommend-view :recommends="recommends"/>
-    <feature-view/>
-    <tab-control class="tab-control" 
-                 :titles="['流行', '新款', '精选']"
-                 @tabClick="tabClick"/>
-    <!-- <good-list :goods="goods['pop'].list"/> -->
-    <!-- 这个不要写死了 -->
-    <!-- 但是这个东西有点太长了，我们用计算属性比较好-->
-    <!-- 这个是good-list,我写成了goods-list -->
-    <good-list :goods="showGoods"/>
-    <!-- 这样就变短了，就很好了 -->
-      </div>
-    </div>
+          <recommend-view :recommends="recommends"/>
+          <feature-view/>
+          <tab-control class="tab-control" 
+                      :titles="['流行', '新款', '精选']"
+                      @tabClick="tabClick"/>
+          <!-- <good-list :goods="goods['pop'].list"/> -->
+          <!-- 这个不要写死了 -->
+          <!-- 但是这个东西有点太长了，我们用计算属性比较好-->
+          <!-- 这个是good-list,我写成了goods-list -->
+          <good-list :goods="showGoods"/>
+          <!-- 这样就变短了，就很好了 -->
+      </scroll>
+
+      <back-top @click.native="backClick"></back-top>
+      <!-- <back-top @backClick="backClick"></back-top> -->
+      <!-- 我干脆监听组件的点击比较好 -->
+      <!-- 但是组件能不能直接监听点击事件是个问题,答案是不能-->
+      <!-- 必须要加上一个原生的native修饰符才可以监听组件点击 -->
+      <!-- </div>
+    </div> -->
   </div>
 </template>
 
@@ -44,9 +57,12 @@ import FeatureView from './childComps/FeatureView'
 import NavBar from "components/common/navbar/NavBar";
 import TabControl from "components/content/tabControl/TabControl"
 import GoodList from 'components/content/goods/GoodsList'
-
+import Scroll from 'components/common/scroll/Scroll'
+import BackTop from 'components/content/backTop/BackTop'
 // 这个名字叫GoodList，我写成了GoodsList
 import {getHomeMultidata,getHomeGoods} from "network/home.js";
+// import BScroll from 'better-scroll';
+// 不是写在这里的
 // 因为这里我不需要export导出，所以可以用大括号。
 
 // import Swiper from 'components/common/swiper/Swiper'
@@ -70,6 +86,8 @@ export default {
     TabControl,
     GoodList,
     // 这个也写成GoodList吧
+    Scroll,
+    BackTop
   },
   data() {
     // 需要用data这个东西把数据保存起来
@@ -113,7 +131,13 @@ export default {
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
   },
-
+  // mounted() {
+  //   // this.$refs.aaa
+  //   // 通过这样就可以拿到上面的div元素了
+  //   this.scroll = new BScroll(this.$refs.wrapper,{
+  //     // 这样写我在这里拿到的永远是上面的swapper
+  //   })
+  // },
   methods: {
     // 事件监听相关的方法
       tabClick(index){
@@ -130,6 +154,16 @@ export default {
             // 因为我们现在没有其他情况，写不写default都可以
             break
         }
+      },
+      backClick(){
+        // console.log('backClick');
+        // 点击了没有反应
+        // 说明组件是不能直接监听点击的
+        // 如果要直接监听点击，必须做一件事情
+        // this.$refs.scroll.scroll.scrollTo(0,0,500);
+        // 先拿到scroll这个组件，再调用scroll组件的scroll属性，再调用scrollTo方法
+        // this.$refs.scroll.message;
+        this.$refs.scroll.scrollTo(0,0)
       },
     // 网络请求相关的方法
      getHomeMultidata(){
@@ -167,11 +201,15 @@ export default {
 <style scoped>
 
 #home{
-  padding-top: 44px;
+  position: relative;
+  /* padding-top: 44px; */
+  height: 100vh;
+  /* vh叫viewport height(视口高度) */
 }
 .home-nav {
   background-color: var(--color-tint);
   color: #fff;
+
   position: fixed;
   left: 0;
   right: 0;
@@ -181,10 +219,31 @@ export default {
 
 .tab-control{
   position: sticky;
+  /* 代码写到后面会发现这个属性已经不起效果了 */
+  /* 因为已经不是原生的滚动了，是better-scroll在帮我们滚动，此时系统无法检查滚动到哪里 */
   /* 这个属性可以实现吸顶效果 */
   /* 移动端用这个属性特别好，但是如果要适配ie的话，这个属性就不要乱用了 */
   top: 44px;
   /* 这个top属性是和sticky配套的 */
   z-index: 9;
+}
+
+/* .content{ */
+  /* 因为是style scoped，所以样式不会作用到前面的div上 */
+  /* 这里面的样式只会针对当前组件scroll的content来起到作用 */
+  /* height: 300px;
+  height: calc(100% - 93px);
+  overflow: hidden;
+  margin-top: 51px;
+} */
+
+.content{
+  height: 300px;
+  /* overflow: hidden; */
+  position:absolute;
+  top: 44px;
+  bottom: 49px;
+  left: 0;
+  right: 0;
 }
 </style>
