@@ -8,9 +8,9 @@
     <scroll class="content"
             ref="scroll"
             :probe-type="3"
-          <!-- <div ref="aaa"></div> -->
-          <!-- div这种普通元素上面其实也是可以绑定ref的 -->
-          <!-- 这个scroll组件是要给自己设置高度的，不要忘了 -->
+            @scroll="contentScroll"
+            :pull-up-load="true"
+            @pullingUp="loadMore">
           <home-swiper :banners="banners"/>
           <!-- 以后这里要插入东西，所以要用双标签 -->
           <!-- <swiper>
@@ -35,8 +35,8 @@
           <good-list :goods="showGoods"/>
           <!-- 这样就变短了，就很好了 -->
       </scroll>
-
-      <back-top @click.native="backClick"></back-top>
+      <!-- <div>呵呵呵</div> -->
+      <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
       <!-- <back-top @backClick="backClick"></back-top> -->
       <!-- 我干脆监听组件的点击比较好 -->
       <!-- 但是组件能不能直接监听点击事件是个问题,答案是不能-->
@@ -106,7 +106,8 @@ export default {
           'new':{page: 0,list:[]},
           'sell':{page: 0,list:[]},
         },
-        currentType:'pop'
+        currentType:'pop',
+        isShowBackTop:false
     };
   },
   computed:{
@@ -165,6 +166,18 @@ export default {
         // this.$refs.scroll.message;
         this.$refs.scroll.scrollTo(0,0)
       },
+      contentScroll(position){
+        // console.log(position);
+        // position.y > 1000
+        this.isShowBackTop =(-position.y) > 1000
+        // 这个y值永远是负数，要先把它转为正数再说
+      },
+      loadMore(){
+        // console.log('上拉加载更多');
+        this.getHomeGoods(this.currentType)
+        this.$refs.scroll.scroll.refresh()
+        // 一旦调用refresh它就会重新计算可滚动的区域
+      },
     // 网络请求相关的方法
      getHomeMultidata(){
         getHomeMultidata().then(res => {
@@ -192,6 +205,7 @@ export default {
             this.goods[type].list.push(...res.data.list)
             this.goods[type].page += 1
             // 再做一件事情，把它的页码加1
+            this.$refs.scroll.finishPullUp()
         })
      }
   }

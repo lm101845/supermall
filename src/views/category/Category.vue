@@ -132,12 +132,13 @@
       // })
       // 不能在这里做
     },
+    // 组件创建完调用
     mounted() {
       // console.log(this.$refs.aaaa);
       // console.log(document.querySelector('.wrapper'));
       this.scroll = new BScroll(this.$refs.aaaa,{
-        probeType:3,
-        pullUpLoad:true
+        // probeType:3,
+        // pullUpLoad:true
       })
 
       this.scroll.on('scroll',(position)=>{
