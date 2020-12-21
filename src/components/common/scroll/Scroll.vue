@@ -18,10 +18,10 @@ export default {
         type:Number,
         default:0
       },
-      pullUpLoad:{
-        type:Boolean,
-        default:false
-      }
+      // pullUpLoad:{
+      //   type:Boolean,
+      //   default:false
+      // }
     },
     data(){
         return {
@@ -52,10 +52,15 @@ export default {
         })
         // this.scroll.scrollTo(0,0)
         // 3.监听上拉事件
-        this.scroll.on('pullingUp',()=>{
-          // console.log("上拉加载更多");
-          this.$emit('pullingUp')
-        })
+        // this.scroll.on('pullingUp',()=>{
+        //   // console.log("上拉加载更多");
+        //   this.$emit('pullingUp')
+        // })
+        console.log(this.scroll);
+        // this.scroll.scrollHeight = 100000000
+        // 肯定不能这样做的
+        this.scroll.refresh()
+        // 等图片加载完后去调用一次refresh
     },
     methods: {
       // 体现了一种封装的思想
@@ -64,6 +69,9 @@ export default {
       },
       finishPullUp(){
         this.scroll.finishPullUp()
+      },
+      refresh(){
+        this.scroll.refresh()
       }
     }
 }

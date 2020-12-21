@@ -10,7 +10,6 @@
             :probe-type="3"
             @scroll="contentScroll"
             :pull-up-load="true"
-            @pullingUp="loadMore">
           <home-swiper :banners="banners"/>
           <!-- 以后这里要插入东西，所以要用双标签 -->
           <!-- <swiper>
@@ -131,6 +130,14 @@ export default {
     this.getHomeGoods('pop')
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
+
+    // 3.监听item中图片加载完成
+    this.$bus.$on('itemImageLoad',() => {
+        // console.log('-------------');
+        // console.log(this.$bus);
+        // this.$refs.scroll.scroll.refresh()
+        this.$refs.scroll.refresh()
+    })
   },
   // mounted() {
   //   // this.$refs.aaa
@@ -139,6 +146,8 @@ export default {
   //     // 这样写我在这里拿到的永远是上面的swapper
   //   })
   // },
+
+
   methods: {
     // 事件监听相关的方法
       tabClick(index){
@@ -172,12 +181,12 @@ export default {
         this.isShowBackTop =(-position.y) > 1000
         // 这个y值永远是负数，要先把它转为正数再说
       },
-      loadMore(){
-        // console.log('上拉加载更多');
-        this.getHomeGoods(this.currentType)
-        this.$refs.scroll.scroll.refresh()
-        // 一旦调用refresh它就会重新计算可滚动的区域
-      },
+      // loadMore(){
+      //   // console.log('上拉加载更多');
+      //   this.getHomeGoods(this.currentType)
+      //   this.$refs.scroll.scroll.refresh()
+      //   // 一旦调用refresh它就会重新计算可滚动的区域
+      // },
     // 网络请求相关的方法
      getHomeMultidata(){
         getHomeMultidata().then(res => {
@@ -205,7 +214,7 @@ export default {
             this.goods[type].list.push(...res.data.list)
             this.goods[type].page += 1
             // 再做一件事情，把它的页码加1
-            this.$refs.scroll.finishPullUp()
+            // this.$refs.scroll.finishPullUp()
         })
      }
   }
