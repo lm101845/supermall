@@ -3,7 +3,8 @@
   <swiper>
     <swiper-item v-for="item in banners" :key="item.index">
       <a :href="item.link">
-        <img :src="item.image" alt="" />
+        <img :src="item.image" alt="" @load="imageLoad"/>
+        <!-- 前端开发时图片经常会影响到offsetTop -->
       </a>
     </swiper-item>
     <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
@@ -23,9 +24,24 @@ export default {
       }
     }
   },
+  data(){
+    return {
+      isLoad: false
+    }
+  },
   components: {
     Swiper,
     SwiperItem
+  },
+  methods:{
+   imageLoad(){
+      if(!this.isLoad){
+        // console.log('--------');
+        this.$emit('swiperImageLoad')
+        // 我们在这里发出的事件其实只要发出一次就可以了
+        this.isLoad = true
+      }
+    }
   }
 };
 </script>

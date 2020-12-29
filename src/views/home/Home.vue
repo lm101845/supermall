@@ -2,6 +2,12 @@
   <div id="home" class="wrapper">
     <!-- 这里是首页，可以用id了 -->
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
+    <tab-control :titles="['流行', '新款', '精选']"
+                   @tabClick="tabClick"
+                   ref="tabControl1" 
+                   class="tab-control"
+                   v-show="isTabFixed"/>
+    <!-- 把这个拷贝一份  -->
     <!-- 给它加上滚动框架 -->
     <!-- <div class="wrap">
       <div class="content"> -->
@@ -10,32 +16,36 @@
             :probe-type="3"
             @scroll="contentScroll"
             :pull-up-load="true"
-          <home-swiper :banners="banners"/>
-          <!-- 以后这里要插入东西，所以要用双标签 -->
-          <!-- <swiper>
-            <swiper-item v-for="item in banners">
-              <a :href="item.link">
-                <img :src="item.image" alt="" />
-              </a>
-            </swiper-item>
-          </swiper> -->
-          <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
-          <!-- 但是这样写的话Home.vue里面的东西太多了，我们需要进行抽离 -->
-          <!-- Home.vue文件里面只放一些主要的逻辑 -->
-          <recommend-view :recommends="recommends"/>
-          <feature-view/>
-          <tab-control class="tab-control" 
-                      :titles="['流行', '新款', '精选']"
-                      @tabClick="tabClick"/>
-          <!-- <good-list :goods="goods['pop'].list"/> -->
-          <!-- 这个不要写死了 -->
-          <!-- 但是这个东西有点太长了，我们用计算属性比较好-->
-          <!-- 这个是good-list,我写成了goods-list -->
-          <good-list :goods="showGoods"/>
-          <!-- 这样就变短了，就很好了 -->
+            @pullingUp="loadMore"> 
+    <home-swiper :banners="banners"
+                @swiperImageLoad="swiperImageLoad"/>
+      <!-- 以后这里要插入东西，所以要用双标签 -->
+      <!-- <swiper>
+        <swiper-item v-for="item in banners">
+          <a :href="item.link">
+            <img :src="item.image" alt="" />
+          </a>
+        </swiper-item>
+      </swiper> -->
+      <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
+      <!-- 但是这样写的话Home.vue里面的东西太多了，我们需要进行抽离 -->
+      <!-- Home.vue文件里面只放一些主要的逻辑 -->
+      <recommend-view :recommends="recommends"/>
+      <feature-view></feature-view>
+      <!-- <tab-control class="tab-control"  -->
+      <tab-control :titles="['流行', '新款', '精选']"
+                   @tabClick="tabClick"
+                   ref="tabControl2"/>
+      <!-- 给tab-control加这个:class="{fixed:isTabFixed}"行不通 -->
+      <!-- <good-list :goods="goods['pop'].list"/> -->
+      <!-- 这个不要写死了 -->
+      <!-- 但是这个东西有点太长了，我们用计算属性比较好-->
+      <!-- 这个是good-list,我写成了goods-list -->
+      <good-list :goods="showGoods"/>
+      <!-- 这样就变短了，就很好了 -->
       </scroll>
       <!-- <div>呵呵呵</div> -->
-      <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
+      <back-top @click.native="backClick" v-show="isShowBackTop"/>
       <!-- <back-top @backClick="backClick"></back-top> -->
       <!-- 我干脆监听组件的点击比较好 -->
       <!-- 但是组件能不能直接监听点击事件是个问题,答案是不能-->
@@ -59,7 +69,9 @@ import GoodList from 'components/content/goods/GoodsList'
 import Scroll from 'components/common/scroll/Scroll'
 import BackTop from 'components/content/backTop/BackTop'
 // 这个名字叫GoodList，我写成了GoodsList
-import {getHomeMultidata,getHomeGoods} from "network/home.js";
+import {getHomeMultidata,getHomeGoods} from "network/home";
+import {debounce} from "common/utils";
+
 // import BScroll from 'better-scroll';
 // 不是写在这里的
 // 因为这里我不需要export导出，所以可以用大括号。
@@ -106,8 +118,11 @@ export default {
           'sell':{page: 0,list:[]},
         },
         currentType:'pop',
-        isShowBackTop:false
-    };
+        isShowBackTop: false,
+        tabOffsetTop: 0, 
+        // 设置吸顶效果 
+        isTabFixed: false
+    }
   },
   computed:{
     showGoods(){
@@ -126,19 +141,74 @@ export default {
     // 详细的东西在methods里面写，这里只调用一下函数即可
     // 因为函数名起的一样，所以你必须写this，否则它执行的是imports里面导入的函数
 
-    // 2.请求商品数据
+      // 2.请求商品数据
     this.getHomeGoods('pop')
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
 
-    // 3.监听item中图片加载完成
-    this.$bus.$on('itemImageLoad',() => {
-        // console.log('-------------');
-        // console.log(this.$bus);
-        // this.$refs.scroll.scroll.refresh()
-        this.$refs.scroll.refresh()
-    })
+    // 3.监听item中图片加载完成(不要放到created里面！！！)
+    // this.$bus.$on('itemImageLoad',() => {
+    //     // console.log('-------------');
+    //     // console.log(this.$bus);
+    //     // this.$refs.scroll.scroll.refresh()
+    //     this.$refs.scroll.refresh()
+    //     // 但是这个代码的执行频率会很高
+    //     // 犯了一个错误：在created里面拿this.$refs
+    //     // console.log(this.$refs.scroll.refresh);
+    //     // console.log('----------------');
+    // })
+
+    // 3.赋值
+    // this.tabOffsetTop = this.$refs.tabControl
+    // 在这里是拿不到的，是undefined
+    // 因为它在created里面，应该放到mounted里面
   },
+  mounted() {
+    // 1.图片加载完成的事件监听
+    // 相当于这个refresh就是返回值了
+    // const refresh = debounce(this.$refs.scroll.refresh,50)
+    // 这他娘的到底是哪里有问题啊？？？
+    // func = this.$refs.scroll.refresh
+    // // const refresh = this.debounce(this.$refs.scroll.refresh,500)
+      // 3.监听item中图片加载完成
+      // 第一次timer没有值，就是null
+      // 2.
+      // 3.
+      // 30
+    //  const refresh = this.debounce(this.$refs.scroll.refresh,200)
+     const refresh = debounce(this.$refs.scroll.refresh,200)
+     this.$bus.$on('itemImageLoad', () => {
+          // // console.log(this.$bus);
+        // // this.$refs.scroll.scroll.refresh()
+        // this.$refs.scroll.refresh()
+        // 但是这样调的话，调用refresh就有点频繁了
+        // 所以我们不要让它执行这个函数了
+        // console.log('-------------');
+        // // 犯了一个错误：在created里面拿this.$refs
+        // // console.log(this.$refs.scroll.refresh);
+        // // console.log('----------------');
+        // // 如果没有防抖，refresh可能要执行30次
+        // // 如果有防抖，可能refresh只要执行一次就可以了
+        // // refresh('11111','2222')
+        refresh()
+        // 这是一个闭包，对上面的变量refresh有一个引用，所以不会销毁
+    })
+
+    // 2.获取tabControl的offsetTop
+    // 所有的组件都有一个属性$el，用于获取组件中的元素
+    // 元素中才有offsetTop属性
+    // 使用document.querySelector拿是不准确的
+    // 这个拿到的是一个组件对象
+    // 但是组件有一个属性叫offsetTop吗?
+    // console.log(this.$refs.tabControl.offsetTop);
+    // 显示undefined，说明没有
+    // console.log(this.$refs.tabControl.$el.offsetTop);
+    // 但是这里拿到的offsetTop是不准确的，没有包含图片加载完后的高度
+    // this.tabOffsetTop = this.$refs.tabControl
+
+  },
+  
+
   // mounted() {
   //   // this.$refs.aaa
   //   // 通过这样就可以拿到上面的div元素了
@@ -146,10 +216,16 @@ export default {
   //     // 这样写我在这里拿到的永远是上面的swapper
   //   })
   // },
-
-
   methods: {
     // 事件监听相关的方法
+    // debounce这个函数在其他地方也可能会被用到
+    // 像这种防止抖动的功能型函数一般不要写到某个组件里面
+      // debounce(func,delay){
+      //   if(timer) clearTimeout(timer)
+      //   timer = setTimeout(()=>{
+      //    func.apply(this,args)
+      //   },delay)
+      // },
       tabClick(index){
         // console.log(index);
         switch(index){
@@ -164,6 +240,9 @@ export default {
             // 因为我们现在没有其他情况，写不写default都可以
             break
         }
+        this.$refs.TabControl1.currentIndex = index;
+        this.$refs.TabControl2.currentIndex = index;
+        // 这2行代码主要用于：点击新款时往上拉还是显示新款
       },
       backClick(){
         // console.log('backClick');
@@ -173,13 +252,18 @@ export default {
         // this.$refs.scroll.scroll.scrollTo(0,0,500);
         // 先拿到scroll这个组件，再调用scroll组件的scroll属性，再调用scrollTo方法
         // this.$refs.scroll.message;
-        this.$refs.scroll.scrollTo(0,0)
+        this.$refs.scroll.scrollTo(0, 0)
       },
       contentScroll(position){
         // console.log(position);
         // position.y > 1000
-        this.isShowBackTop =(-position.y) > 1000
+
+        // 1.判断BackTop是否显示
+        this.isShowBackTop = (-position.y) > 1000
         // 这个y值永远是负数，要先把它转为正数再说
+
+        // 2.决定tabControl是否吸顶(position:fixed)
+        this.isTabFixed = (-position.y) > this.tabOffsetTop 
       },
       // loadMore(){
       //   // console.log('上拉加载更多');
@@ -187,6 +271,19 @@ export default {
       //   this.$refs.scroll.scroll.refresh()
       //   // 一旦调用refresh它就会重新计算可滚动的区域
       // },
+      loadMore(){
+        // console.log('加载更多的方法');
+        // 我们需要针对类型加载更多的数据
+        // 点击流行，就给流行这个类加载更多
+        // 点击新款，就给新款这个类加载更多
+        this.getHomeGoods(this.currentType)
+      },
+     swiperImageLoad(){
+          // console.log(this.$refs.tabControl.$el.offsetTop);
+          // 但是它调用的频率也是很高的，它调用了4次(轮播图有4张图片)
+          // 我们只需要它调用一次就可以了
+          this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop
+      },
     // 网络请求相关的方法
      getHomeMultidata(){
         getHomeMultidata().then(res => {
@@ -208,65 +305,85 @@ export default {
      getHomeGoods(type){
         const page = this.goods[type].page + 1
         getHomeGoods(type,page).then(res=>{
+            // 箭头函数的指向会向上找，而我们这里的this就是我们当前的组件对象了
             // console.log(res);
             // 注意：res是局部变量，到时候函数执行完它会消失的
             // 这里的res是pop的前30条数据，而且是第一页
             this.goods[type].list.push(...res.data.list)
             this.goods[type].page += 1
             // 再做一件事情，把它的页码加1
-            // this.$refs.scroll.finishPullUp()
+
+            // 完成上拉加载更多
+            // this.$refs.scroll
+            // 但是我们不会在这里写，会封装一个函数
+
+            this.$refs.scroll.finishPullUp()
         })
      }
   }
-};
+}
 </script>
 
 <style scoped>
-
 #home{
-  position: relative;
   /* padding-top: 44px; */
   height: 100vh;
   /* vh叫viewport height(视口高度) */
+  position: relative;
 }
+
+
 .home-nav {
   background-color: var(--color-tint);
   color: #fff;
-
-  position: fixed;
+  /* 在使用浏览器原生滚动时，为了让导航不跟随一起滚动才用了下面的属性 */
+  /* position: fixed;
   left: 0;
   right: 0;
   top: 0;
-  z-index: 9;
+  z-index: 9; */
 }
 
 .tab-control{
-  position: sticky;
-  /* 代码写到后面会发现这个属性已经不起效果了 */
+  /* position: sticky; */
+  /* 代码写到后面会发现这个sticky属性已经不起效果了 */
   /* 因为已经不是原生的滚动了，是better-scroll在帮我们滚动，此时系统无法检查滚动到哪里 */
   /* 这个属性可以实现吸顶效果 */
   /* 移动端用这个属性特别好，但是如果要适配ie的话，这个属性就不要乱用了 */
-  top: 44px;
+  /* top: 44px; */
   /* 这个top属性是和sticky配套的 */
+  position: relative;
   z-index: 9;
+  /* z-index只对定位的元素起效果 */
+
+
 }
 
 /* .content{ */
-  /* 因为是style scoped，所以样式不会作用到前面的div上 */
-  /* 这里面的样式只会针对当前组件scroll的content来起到作用 */
   /* height: 300px;
   height: calc(100% - 93px);
   overflow: hidden;
   margin-top: 51px;
 } */
 
+  /* 因为是style scoped，所以样式不会作用到前面的div上 */
+  /* 这里面的样式只会针对当前组件scroll的content来起到作用 */
+  
 .content{
-  height: 300px;
-  /* overflow: hidden; */
+  overflow: hidden;
   position:absolute;
   top: 44px;
+  /* height: 300px; */
   bottom: 49px;
   left: 0;
   right: 0;
 }
+
+/* .fixed{
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 44px;
+} */
+/* 这个办法行不通 */
 </style>

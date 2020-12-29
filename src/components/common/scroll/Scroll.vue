@@ -15,13 +15,14 @@ export default {
     name:'Scroll',
     props:{
       probeType:{
-        type:Number,
-        default:0
+        type: Number,
+        default: 0
       },
-      // pullUpLoad:{
-      //   type:Boolean,
-      //   default:false
-      // }
+      pullUpLoad:{
+        type: Boolean,
+        default: false
+        // 默认不需要监听上拉事件的
+      }
     },
     data(){
         return {
@@ -45,33 +46,53 @@ export default {
         probeType: this.probeType,
         pullUpLoad: this.pullUpLoad
       })
-      // 2.监听我们滚动的位置
-        this.scroll.on('scroll',(position)=>{
-          // console.log(position);
-          this.$emit('scroll',position)
+
+      // 2.监听滚动的位置
+       if (this.probeType === 2 || this.probeType === 3) {
+        this.scroll.on('scroll', (position) => {
+          this.$emit('scroll', position)
+          // console.log(position); 
         })
+        // console.log(this.scroll);
+        // this.scroll.refresh()
+        // 等图片加载完后去调用一次refresh
+      }
         // this.scroll.scrollTo(0,0)
-        // 3.监听上拉事件
-        // this.scroll.on('pullingUp',()=>{
-        //   // console.log("上拉加载更多");
-        //   this.$emit('pullingUp')
-        // })
-        console.log(this.scroll);
+        // console.log(this.scroll);
         // this.scroll.scrollHeight = 100000000
         // 肯定不能这样做的
-        this.scroll.refresh()
-        // 等图片加载完后去调用一次refresh
+
+        // 3.监听scroll滚动到底部
+        if(this.pullUpLoad){
+          // 不是所有的组件都要监听上拉事件的
+          // 还需要做一个判断
+            this.scroll.on('pullingUp',() => {
+              // console.log('监听到滚动到底部');
+              this.$emit('pullingUp')
+              // 这里没有参数，光监听这个事件就可以了
+              // 上拉加载更多这个事件你也需要进行传出去
+              // 告诉主页我已经滚到底部了
+              // 然后让首页上拉加载更多
+            })
+        }
     },
     methods: {
       // 体现了一种封装的思想
-      scrollTo(x, y, time=300) {
-        this.scroll.scrollTo(x, y, time)
+      scrollTo(x, y, time = 300) {
+          // this.scroll && this.scroll.scrollTo && this.scroll.scrollTo(x, y, time)
+          this.scroll && this.scroll.scrollTo(x, y, time)
+        // 确保scroll有值
+        // 逻辑与前面为false后面就不会执行了
       },
-      finishPullUp(){
-        this.scroll.finishPullUp()
+      // finishPullUp(){
+      //   this.scroll.finishPullUp()
+      // },
+      refresh() {
+        // console.log('---------');
+        this.scroll && this.scroll.refresh()
       },
-      refresh(){
-        this.scroll.refresh()
+     finishPullUp() {
+        this.scroll && this.scroll.finishPullUp()
       }
     }
 }

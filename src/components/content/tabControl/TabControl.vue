@@ -29,7 +29,7 @@ export default {
     },
     data(){
         return {
-            currentIndex:0
+            currentIndex: 0
             // 弄一个变量记录下当前谁被选中
         }
     },
