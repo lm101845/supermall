@@ -119,6 +119,7 @@
 		  handleDom: function () {
         // 1.获取要操作的元素
         let swiperEl = document.querySelector('.swiper');
+        // 使用query不太好，可能会出现类名冲突
         let slidesEls = swiperEl.getElementsByClassName('slide');
 
         // 2.保存个数
