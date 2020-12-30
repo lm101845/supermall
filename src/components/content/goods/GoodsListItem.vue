@@ -1,5 +1,5 @@
 <template>
-    <div class="goods-item">
+    <div class="goods-item" @click="itemClick">
         <img :src="goodsItem.show.img" alt="" @load="imageLoad">
         <!-- goodsItem我写成了goodsItme，找了快半个小时错。。。 -->
         <div class="goods-info">
@@ -28,6 +28,22 @@ export default {
         // console.log('imageLoad');
         this.$bus.$emit('itemImageLoad')
         // console.log(this.$bus);
+      },
+      itemClick(){
+        // console.log('跳转到详情页');
+        this.$router.push('/detail/' + this.goodsItem.iid)
+        // 这个goodsItem就是那个图片对象
+        // 这里最好用push，之前很多地方用的是replace
+        // 用push到时候方便返回(到时候调用push的back方法就可以返回了)
+        // 你在调到详情页的同时也需要传递过来一些参数
+        // 你需要把我们点击的商品的id给我们
+        // query的方式是下面这样做的：
+        // this.$router.push({
+        //   path:'/detail',
+        //   query:{
+
+        //   }
+        // })
       }
     }
 }

@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <router-view/>
+    <keep-alive>
+      <!-- 在外面包一层keep-alive页面就不会销毁了 -->
+      <router-view/>
+    </keep-alive>
     <main-tab-bar/>
     <!-- MainTabBar还用于管理了路由相关的映射关系 -->
   </div>

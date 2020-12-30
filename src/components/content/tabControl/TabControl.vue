@@ -7,9 +7,9 @@
        <!-- 因为我们发现它们长的样子在首页和分类里面完全一样(文字颜色都一样) -->
         <!-- <div v-for="item in titles" class="tab-control-item"> -->
         <!--下面是升级版-->
-        <div v-for="(item,index) in titles" 
-             class="tab-control-item" 
-             :class="{active:index === currentIndex}"
+        <div v-for="(item, index) in titles"
+             class="tab-control-item"
+             :class="{active: index === currentIndex}"
              @click="itemClick(index)">
             <span>{{item}}</span>
         </div>

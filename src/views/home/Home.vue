@@ -121,13 +121,30 @@ export default {
         isShowBackTop: false,
         tabOffsetTop: 0, 
         // 设置吸顶效果 
-        isTabFixed: false
+        isTabFixed: false,
+        saveY: 0
     }
   },
   computed:{
     showGoods(){
       return this.goods[this.currentType].list
     }
+  },
+  // destroyed() {
+  //   console.log('home destroyed');
+  // },
+  activated() {
+    // console.log('activated');
+    this.$refs.scroll.scrollTo(0,this.saveY,0)
+    this.$refs.scroll.refresh()
+    // 不写refresh可能会出现一些问题，导致页面无法滚动
+  },
+  deactivated() {
+    // console.log('deactivated');
+    // this.saveY = -1000
+    // this.saveY = this.$refs.scroll.scroll.y
+    this.saveY = this.$refs.scroll.getScrollY()
+    // console.log(this.saveY);
   },
   created() {
     // created是个比较特殊的函数，它是当组件创建完后就会执行的函数
@@ -240,9 +257,10 @@ export default {
             // 因为我们现在没有其他情况，写不写default都可以
             break
         }
-        this.$refs.TabControl1.currentIndex = index;
-        this.$refs.TabControl2.currentIndex = index;
+        // this.$refs.TabControl1.currentIndex = index;
+        // this.$refs.TabControl2.currentIndex = index;
         // 这2行代码主要用于：点击新款时往上拉还是显示新款
+        // 但是我写了会报错，显示没有设置currentIndex,我先不写吧
       },
       backClick(){
         // console.log('backClick');
