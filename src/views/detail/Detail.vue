@@ -11,7 +11,10 @@
             <detail-shop-info :shop="shop"></detail-shop-info>
             <detail-goods-info :detail-info='detailInfo'></detail-goods-info>
             <detail-param-info :param-info="paramInfo"></detail-param-info>
+            <detail-comment-info :comment-info="commentInfo"></detail-comment-info>
+            <goods-list :goods="recommends"></goods-list>
         </scroll>
+        <!-- <h2>详情页：{{iid}}</h2> -->
     </div>
 </template>
 
@@ -23,10 +26,14 @@ import DetailBaseInfo from './childComps/DetailBaseInfo'
 import DetailShopInfo from './childComps/DetailShopInfo'
 import DetailGoodsInfo from './childComps/DetailGoodsInfo'
 import DetailParamInfo from './childComps/DetailParamInfo'
+import DetailCommentInfo from  './childComps/DetailCommentInfo'
 
 import Scroll from 'components/common/scroll/Scroll'
+import GoodsList from 'components/content/goods/GoodsList'
 
-import {getDetail,Goods,Shop,GoodsParam} from 'network/detail'
+import {getDetail,Goods,Shop,GoodsParam,getRecommend} from 'network/detail'
+import {debounce} from 'common/utils'
+import {itemListenerMixin} from 'common/mixin'
 
 export default {
     name: 'Detail',
@@ -39,8 +46,11 @@ export default {
     DetailShopInfo,
     DetailGoodsInfo,
     DetailParamInfo,
-    Scroll
+    DetailCommentInfo,
+    Scroll,
+    GoodsList
     },
+    mixins:[itemListenerMixin],
     data(){
         return {
           iid: null,
@@ -50,7 +60,11 @@ export default {
           goods:{},
           shop:{},
           detailInfo:{},
-          paramInfo:{}
+          paramInfo:{},
+          commentInfo:{},
+          recommends:[],
+        //itemImgListener:null
+        //itemImgListener属性Home.vue里面也有，所以也把它进行混入
         }
     },
     created(){
@@ -62,7 +76,7 @@ export default {
         // 直接在这里请求不好
         // 最好对我们这些东西都做一层封装
         getDetail(this.iid).then(res=>{
-            console.log(res)
+            // console.log(res)
             // this.res = res
             // 不要向上面这样做,要分离一下
             const data = res.result;
@@ -82,7 +96,30 @@ export default {
 
             // 5.获取参数信息
             this.paramInfo = new GoodsParam(data.itemParams.info,data.itemParams.rule)
+
+            // 6.获取评论信息
+            // 有些商品是没有评论信息的，所以最好做一个判断
+            if(data.rate.cRate !== 0){
+                this.commentInfo = data.rate.list[0]
+            }
         })
+
+        getRecommend().then(res=>{
+            // console.log(res);
+            this.recommends = res.data.list
+        })
+    },
+    mounted() {
+      console.log('mounted');
+    },
+    // deactivated() {
+    // 不能在这里取消 
+    //     console.log('deactivated');
+    // },
+    destroyed() {
+        // console.log('destroyed');
+        this.$bus.$off('itemImageLoad',this.itemImgListener)
+
     },
     methods:{
         imageLoad(){

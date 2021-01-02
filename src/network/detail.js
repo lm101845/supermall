@@ -9,6 +9,12 @@ export function getDetail(iid) {
     })
 }
 
+export function getRecommend() { 
+  return request({
+    url: '/recommend',
+    
+  })
+}
 export class Goods{ 
     // ES6里面可以直接定义class
     // 导出一个类

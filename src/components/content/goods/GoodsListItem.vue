@@ -1,6 +1,8 @@
 <template>
     <div class="goods-item" @click="itemClick">
-        <img :src="goodsItem.show.img" alt="" @load="imageLoad">
+      <!-- 这个根上点击就跳转到详情页 -->
+        <!-- <img :src="goodsItem.show.img" alt="" @load="imageLoad"> -->
+        <img :src="showImage" alt="" @load="imageLoad">
         <!-- goodsItem我写成了goodsItme，找了快半个小时错。。。 -->
         <div class="goods-info">
             <p>{{goodsItem.title}}</p>
@@ -23,14 +25,30 @@ export default {
             }
         }
     },
+    computed:{
+      showImage(){
+        return this.goodsItem.image || this.goodsItem.show.img
+      }
+    },
     methods:{
       imageLoad(){
         // console.log('imageLoad');
-        this.$bus.$emit('itemImageLoad')
+        // 思路2
+        this.$bus.$emit('ItemImageLoad')
+        // 都进入到详情页了，首页就不用再监听这个事件了
+
+
+        // 思路1：通过路由来做——老师没按这个做
+        // if(this.$route.path.indexOf('/home')){
+        //   this.$bus.$emit('homeItemImageLoad')
+        // }else if(this.$route.path.indexOf('/detail')){
+        //   this.$bus.$emit('detailItemImageLoad')
+        // }
         // console.log(this.$bus);
       },
       itemClick(){
         // console.log('跳转到详情页');
+        // console.log(this.product.iid);
         this.$router.push('/detail/' + this.goodsItem.iid)
         // 这个goodsItem就是那个图片对象
         // 这里最好用push，之前很多地方用的是replace

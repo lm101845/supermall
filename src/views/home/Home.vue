@@ -71,6 +71,7 @@ import BackTop from 'components/content/backTop/BackTop'
 // 这个名字叫GoodList，我写成了GoodsList
 import {getHomeMultidata,getHomeGoods} from "network/home";
 import {debounce} from "common/utils";
+import {itemListenerMixin} from 'common/mixin'
 
 // import BScroll from 'better-scroll';
 // 不是写在这里的
@@ -100,6 +101,7 @@ export default {
     Scroll,
     BackTop
   },
+  mixins:[itemListenerMixin],
   data() {
     // 需要用data这个东西把数据保存起来
     return {
@@ -122,7 +124,8 @@ export default {
         tabOffsetTop: 0, 
         // 设置吸顶效果 
         isTabFixed: false,
-        saveY: 0
+        saveY: 0,
+        // itemImgListener:null
     }
   },
   computed:{
@@ -134,17 +137,23 @@ export default {
   //   console.log('home destroyed');
   // },
   activated() {
-    // console.log('activated');
+    // console.log('activated,设置位置');
     this.$refs.scroll.scrollTo(0,this.saveY,0)
     this.$refs.scroll.refresh()
     // 不写refresh可能会出现一些问题，导致页面无法滚动
   },
   deactivated() {
-    // console.log('deactivated');
+    // console.log('deactivated，记录位置');
     // this.saveY = -1000
     // this.saveY = this.$refs.scroll.scroll.y
+    // 1.在离开的时候保存y值
     this.saveY = this.$refs.scroll.getScrollY()
     // console.log(this.saveY);
+
+    // 2.取消全局事件的监听
+    // this.$bus.$off('itemImageLoad',函数)
+    this.$bus.$off('itemImageLoad',this.itemImgListener)
+    // 但是这里你不能只传一个事件，你还要传一个函数，说明取消哪个事件
   },
   created() {
     // created是个比较特殊的函数，它是当组件创建完后就会执行的函数
@@ -181,6 +190,7 @@ export default {
     // 因为它在created里面，应该放到mounted里面
   },
   mounted() {
+    // 因为我写了mixin.js，所以这里可以不用写代码了
     // 1.图片加载完成的事件监听
     // 相当于这个refresh就是返回值了
     // const refresh = debounce(this.$refs.scroll.refresh,50)
@@ -193,8 +203,13 @@ export default {
       // 3.
       // 30
     //  const refresh = this.debounce(this.$refs.scroll.refresh,200)
-     const refresh = debounce(this.$refs.scroll.refresh,200)
-     this.$bus.$on('itemImageLoad', () => {
+    //  const refresh = debounce(this.$refs.scroll.refresh,100)
+
+    //  对监听的事件进行保存
+    // this.itemImgListener = ()=>{
+    //   refresh()
+    // }
+
           // // console.log(this.$bus);
         // // this.$refs.scroll.scroll.refresh()
         // this.$refs.scroll.refresh()
@@ -207,9 +222,10 @@ export default {
         // // 如果没有防抖，refresh可能要执行30次
         // // 如果有防抖，可能refresh只要执行一次就可以了
         // // refresh('11111','2222')
-        refresh()
+        // refresh()
         // 这是一个闭包，对上面的变量refresh有一个引用，所以不会销毁
-    })
+      // this.$bus.$on('itemImageLoad',this.itemImgListener)
+
 
     // 2.获取tabControl的offsetTop
     // 所有的组件都有一个属性$el，用于获取组件中的元素
@@ -222,7 +238,6 @@ export default {
     // console.log(this.$refs.tabControl.$el.offsetTop);
     // 但是这里拿到的offsetTop是不准确的，没有包含图片加载完后的高度
     // this.tabOffsetTop = this.$refs.tabControl
-
   },
   
 
