@@ -17,35 +17,35 @@
             @scroll="contentScroll"
             :pull-up-load="true"
             @pullingUp="loadMore"> 
-    <home-swiper :banners="banners"
-                @swiperImageLoad="swiperImageLoad"/>
-      <!-- 以后这里要插入东西，所以要用双标签 -->
-      <!-- <swiper>
-        <swiper-item v-for="item in banners">
-          <a :href="item.link">
-            <img :src="item.image" alt="" />
-          </a>
-        </swiper-item>
-      </swiper> -->
-      <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
-      <!-- 但是这样写的话Home.vue里面的东西太多了，我们需要进行抽离 -->
-      <!-- Home.vue文件里面只放一些主要的逻辑 -->
-      <recommend-view :recommends="recommends"/>
-      <feature-view></feature-view>
-      <!-- <tab-control class="tab-control"  -->
-      <tab-control :titles="['流行', '新款', '精选']"
-                   @tabClick="tabClick"
+        <home-swiper :banners="banners"
+                    @swiperImageLoad="swiperImageLoad"/>
+          <!-- 以后这里要插入东西，所以要用双标签 -->
+          <!-- <swiper>
+            <swiper-item v-for="item in banners">
+              <a :href="item.link">
+                <img :src="item.image" alt="" />
+              </a>
+            </swiper-item>
+          </swiper> -->
+          <!-- 我们只要从banners里面取出数据，插入到里面就可以了 -->
+          <!-- 但是这样写的话Home.vue里面的东西太多了，我们需要进行抽离 -->
+          <!-- Home.vue文件里面只放一些主要的逻辑 -->
+          <recommend-view :recommends="recommends"/>
+          <feature-view></feature-view>
+          <!-- <tab-control class="tab-control"  -->
+          <tab-control :titles="['流行', '新款', '精选']"
+                       @tabClick="tabClick"
                    ref="tabControl2"/>
-      <!-- 给tab-control加这个:class="{fixed:isTabFixed}"行不通 -->
-      <!-- <good-list :goods="goods['pop'].list"/> -->
-      <!-- 这个不要写死了 -->
-      <!-- 但是这个东西有点太长了，我们用计算属性比较好-->
-      <!-- 这个是good-list,我写成了goods-list -->
-      <good-list :goods="showGoods"/>
-      <!-- 这样就变短了，就很好了 -->
-      </scroll>
-      <!-- <div>呵呵呵</div> -->
-      <back-top @click.native="backClick" v-show="isShowBackTop"/>
+          <!-- 给tab-control加这个:class="{fixed:isTabFixed}"行不通 -->
+          <!-- <good-list :goods="goods['pop'].list"/> -->
+          <!-- 这个不要写死了 -->
+          <!-- 但是这个东西有点太长了，我们用计算属性比较好-->
+          <!-- 这个是good-list,我写成了goods-list -->
+          <good-list :goods="showGoods"/>
+          <!-- 这样就变短了，就很好了 -->
+          </scroll>
+          <!-- <div>呵呵呵</div> -->
+      <back-top @click.native="backTop" v-show="isShowBackTop"/>
       <!-- <back-top @backClick="backClick"></back-top> -->
       <!-- 我干脆监听组件的点击比较好 -->
       <!-- 但是组件能不能直接监听点击事件是个问题,答案是不能-->
@@ -67,11 +67,13 @@ import NavBar from "components/common/navbar/NavBar";
 import TabControl from 'components/content/tabControl/TabControl'
 import GoodList from 'components/content/goods/GoodsList'
 import Scroll from 'components/common/scroll/Scroll'
-import BackTop from 'components/content/backTop/BackTop'
+// import BackTop from 'components/content/backTop/BackTop'
+// 放到mixin里面
 // 这个名字叫GoodList，我写成了GoodsList
 import {getHomeMultidata,getHomeGoods} from "network/home";
+// import {BACK_POSITION} from 'common/const'
 import {debounce} from "common/utils";
-import {itemListenerMixin} from 'common/mixin'
+import {itemListenerMixin,backTopMixin} from 'common/mixin'
 
 // import BScroll from 'better-scroll';
 // 不是写在这里的
@@ -99,9 +101,9 @@ export default {
     GoodList,
     // 这个也写成GoodList吧
     Scroll,
-    BackTop
+    // BackTop
   },
-  mixins:[itemListenerMixin],
+  mixins:[itemListenerMixin,backTopMixin],
   data() {
     // 需要用data这个东西把数据保存起来
     return {
@@ -120,7 +122,7 @@ export default {
           'sell':{page: 0,list:[]},
         },
         currentType:'pop',
-        isShowBackTop: false,
+        // isShowBackTop: false,   放到mixin里面
         tabOffsetTop: 0, 
         // 设置吸顶效果 
         isTabFixed: false,
@@ -283,23 +285,27 @@ export default {
         // 但是我写了会报错，显示没有设置currentIndex,我先不写吧
         // 问题找到了：是生命周期的问题
       },
-      backClick(){
-        // console.log('backClick');
-        // 点击了没有反应
-        // 说明组件是不能直接监听点击的
-        // 如果要直接监听点击，必须做一件事情
-        // this.$refs.scroll.scroll.scrollTo(0,0,500);
-        // 先拿到scroll这个组件，再调用scroll组件的scroll属性，再调用scrollTo方法
-        // this.$refs.scroll.message;
-        this.$refs.scroll.scrollTo(0, 0)
-      },
+      // backTop(){
+      //   // console.log('backClick');
+      //   // 点击了没有反应
+      //   // 说明组件是不能直接监听点击的
+      //   // 如果要直接监听点击，必须做一件事情
+      //   // this.$refs.scroll.scroll.scrollTo(0,0,500);
+      //   // 先拿到scroll这个组件，再调用scroll组件的scroll属性，再调用scrollTo方法
+      //   // this.$refs.scroll.message;
+      //   this.$refs.scroll.scrollTo(0, 0)
+      // },  放到mixin里面
       contentScroll(position){
         // console.log(position);
         // position.y > 1000
 
         // 1.判断BackTop是否显示
-        this.isShowBackTop = (-position.y) > 1000
+        this.listenShowBackTop(position)
+        // this.isShowBackTop = (-position.y) > 1000
+        // this.isShowBackTop = (-position.y) > BACKTOP_POSITION
+        // 引入常量这个以后再说吧，现在先不管了
         // 这个y值永远是负数，要先把它转为正数再说
+        // this.listenShowBackTop()
 
         // 2.决定tabControl是否吸顶(position:fixed)
         this.isTabFixed = (-position.y) > this.tabOffsetTop 

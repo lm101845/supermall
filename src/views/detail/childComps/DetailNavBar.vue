@@ -35,6 +35,9 @@ export default {
     methods:{
         titleClick(index){
             this.currentIndex = index
+            // 但是这里我并没有把事件给发出去
+            // 现在我们要监听点击，所以要发出事件了
+            this.$emit('titleClick',index);
         },
         backClick(){
             // this.$router.go(-1)

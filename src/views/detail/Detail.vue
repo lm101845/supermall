@@ -3,18 +3,26 @@
     <div id="detail">
         <!-- <nav-bar><div slot="center">详情页</div></nav-bar> -->
         <!-- 这个导航还是稍微有些复杂的，那就不要在这里做了 -->
-        <detail-nav-bar class="detail-nav"/>
-        <scroll class="content" ref="scroll">
+        <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav"/>
+        <!-- 属性写titleClick,但是传值的话写title-click -->
+        <!-- 但是事件的话可以写驼峰，写@titleClick也行 -->
+        <scroll class="content" 
+                ref="scroll" 
+                @scroll="contentScroll" 
+                :probe-type="3">
             <!-- scroll必须要有固定的高度 -->
             <detail-swiper :top-images="topImages"/>
             <detail-base-info :goods="goods"></detail-base-info>
             <detail-shop-info :shop="shop"></detail-shop-info>
             <detail-goods-info :detail-info='detailInfo' @imageLoad="imageLoad"></detail-goods-info>
-            <detail-param-info :param-info="paramInfo"></detail-param-info>
-            <detail-comment-info :comment-info="commentInfo"></detail-comment-info>
-            <goods-list :goods="recommends"></goods-list>
+            <detail-param-info :param-info="paramInfo" ref="param"></detail-param-info>
+            <detail-comment-info :comment-info="commentInfo" ref="comment"></detail-comment-info>
+            <goods-list :goods="recommends" ref="recommend"></goods-list>
         </scroll>
         <!-- <h2>详情页：{{iid}}</h2> -->
+        <detail-bottom-bar></detail-bottom-bar>
+        <back-top @click.native="backTop" v-show="isShowBackTop"/>
+
     </div>
 </template>
 
@@ -27,13 +35,19 @@ import DetailShopInfo from './childComps/DetailShopInfo'
 import DetailGoodsInfo from './childComps/DetailGoodsInfo'
 import DetailParamInfo from './childComps/DetailParamInfo'
 import DetailCommentInfo from  './childComps/DetailCommentInfo'
+import DetailBottomBar from './childComps/DetailBottomBar'
 
 import Scroll from 'components/common/scroll/Scroll'
 import GoodsList from 'components/content/goods/GoodsList'
+// import BackTop from 'components/content/backTop/BackTop'
+// 放到mixin里面
+
 
 import {getDetail,Goods,Shop,GoodsParam,getRecommend} from 'network/detail'
 import {debounce} from 'common/utils'
-import {itemListenerMixin} from 'common/mixin'
+import {itemListenerMixin,backTopMixin} from 'common/mixin'
+// import {BACK_POSITION} from 'common/const'
+
 
 export default {
     name: 'Detail',
@@ -47,10 +61,12 @@ export default {
     DetailGoodsInfo,
     DetailParamInfo,
     DetailCommentInfo,
+    DetailBottomBar,
     Scroll,
-    GoodsList
+    GoodsList,
+    // BackTop
     },
-    mixins:[itemListenerMixin],
+    mixins:[itemListenerMixin,backTopMixin],
     data(){
         return {
           iid: null,
@@ -66,6 +82,11 @@ export default {
          //itemImgListener:null,
          //itemImgListener属性Home.vue里面也有，所以也把它进行混入
          // refresh:null
+         themeTopYs:[],
+         getThemeTopY:null,
+         currentIndex:0,
+        //  isShowBackTop: false,  放到mixin里面
+
         }
     },
     created(){
@@ -103,6 +124,25 @@ export default {
             if(data.rate.cRate !== 0){
                 this.commentInfo = data.rate.list[0]
             }
+
+            //  this.$nextTick(()=>{
+                //根据最新的数据，对应的DOM是已经被渲染出来
+                //但是图片依然是没有加载完的(目前获取到的offsetTop不包含其中的图片的)
+                // offsetTop值不对的时候，都是因为图片的问题
+                // 我们也应该等到这些图片加载完之后，给这些图片重新赋值
+                    //  this.themeTopYs = []
+                    // // updated会更新比较频繁，只要有改变就会更新
+                    //  this.themeTopYs.push(0)
+                    //  // 组件没有offsetTop属性，前面必须要加一个$el
+                    //  this.themeTopYs.push(this.$refs.params.$el.offsetTop)
+                    //  // undefined
+                    //  this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
+                    //  // undefined
+                    //  this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+                    //  // 所以这个代码不能放到mounted里面
+                    //  console.log(this.themeTopYs);
+            //  })
+        
         })
         
         // 3.请求推荐数据
@@ -111,27 +151,127 @@ export default {
             this.recommends = res.data.list
         })
 
-        // 4.监听详情图片加载完成
+        // 4.给getThemeTopY赋值(并且进行防抖操作)
+        this.getThemeTopY = debounce(()=>{
+            // console.log('---------');
+              this.themeTopYs = []
+              // updated会更新比较频繁，只要有改变就会更新
+               this.themeTopYs.push(0)
+               // 组件没有offsetTop属性，前面必须要加一个$el
+               this.themeTopYs.push(this.$refs.param.$el.offsetTop)
+               // undefined
+               this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
+               // undefined
+               this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+               this.themeTopYs.push(Number.MAX_VALUE)
+               // 所以这个代码不能放到mounted里面
+               console.log(this.themeTopYs);
+        },100)
 
     },
     mounted() {
-    //   console.log('mounted');
+        //console.log('mounted');
+        // this.themeTopYs.push(0)
+        // // 组件没有offsetTop属性，前面必须要加一个$el
+        // this.themeTopYs.push(this.$refs.params.$el.offsetTop)
+        // // undefined
+        // this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
+        // // undefined
+        // this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+        // // 所以这个代码不能放到mounted里面
+        // console.log(this.themeTopYs);
     },
     // deactivated() {
     // 不能在这里取消 
     //     console.log('deactivated');
     // },
+    // updated() {
+    //          this.themeTopYs = []
+    //         // updated会更新比较频繁，只要有改变就会更新
+    //          this.themeTopYs.push(0)
+    //          // 组件没有offsetTop属性，前面必须要加一个$el
+    //          this.themeTopYs.push(this.$refs.params.$el.offsetTop)
+    //          // undefined
+    //          this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
+    //          // undefined
+    //          this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
+    //          // 所以这个代码不能放到mounted里面
+    //          console.log(this.themeTopYs);
+    // },
     destroyed() {
         // console.log('destroyed');
         this.$bus.$off('itemImageLoad',this.itemImgListener)
-
     },
     methods:{
         imageLoad(){
             // this.$refs.scroll.refresh()
             // 但是这样调用的话会比较频繁，我们这里要做一个防抖
             this.refresh()
-        }
+            // 在这里写肯定就对了
+            // bug是解决了，但是这个调用的过于频繁了
+            this.getThemeTopY()
+             
+        },
+        titleClick(index){
+            // console.log(index);
+            this.$refs.scroll.scrollTo(0,-this.themeTopYs[index],200)
+        },
+        contentScroll(position){
+            // console.log(position);
+            // 1.获取Y值
+            const positionY = -position.y
+            // 2.position和主题中的值进行对比
+            // [0,7838,9120,9452,非常大的值(比如MAX_VALUE)]
+            // console.log(Number.MAX_VALUE);
+            // positionY在0和7938之间，index = 0
+            // positionY在7938和9120之间，index =1
+            // positionY在9120和9452之间，index = 2
+            // positionY在9452以上，index = 3
+            //  positionY在9452和非常大的值之间，Index = 3
+
+            // 我们要把值都给遍历出来
+            // for(let i in this.themeTopYs){
+            //     // console.log(i);
+            //     // if(positionY > this.themeTopYs[i] && positionY < this.themeTopYs[i+1]){
+            //     //     console.log(i);
+            //     // }
+            //     // 但是这样写有一点问题，这个i的类型是一个字符串
+            // }
+            let length = this.themeTopYs.length
+            for(let i = 0; i < length -1;i++){
+                // 最后一层(MAX_VALUE)不需要遍历，所以是length-1
+                // 使用这种最笨的方法，i肯定是数字了
+                // console.log(i);
+
+                // 方法1：普通做法:很麻烦
+                // if(this.currentIndex !== i &&((i < length - 1  && positionY >= this.themeTopYs[i] && positionY < this.themeTopYs[i+1])||(i === length - 1 && positionY > this.themeTopYs[i]))){
+                //     // console.log(i);
+                //     this.currentIndex = i;
+                //     // console.log(this.currentIndex);
+                //     this.$refs.nav.currentIndex = this.currentIndex
+                // }
+                
+                // 方法2：hack做法(但是这个做法我遇到了bug，第二个值是undefined，)
+                if(this.currentIndex !== i && (positionY >= this. themeTopYs[i] && positionY <this. themeTopYs[i+1])){
+                    this.currentIndex = i;
+                    this.$refs.nav.currentIndex = this.currentIndex
+                }
+            }
+                // 3.是否显示回到顶部
+                this.listenShowBackTop(position)
+                // this.isShowBackTop = -position.y > 1000
+                // 这个是不能抽到mixin里面去的
+                // methods只能合并这些大的函数，函数内部的东西是不能抽的
+                // 要想抽只能这样抽
+                // this.listenShowBackTop(position)
+        },
+    //     backTop(){
+    //     this.$refs.scroll.scrollTo(0, 0)
+    //   },   放到mixin里面
+            // listenShowBackTop(){
+            // // 你要真想抽的话，可以在这里再弄一个函数，叫做demo
+            //     this.isShowBackTop = -position.y > 1000
+            // }
     }
 }
 </script>
@@ -149,7 +289,9 @@ export default {
         /* 如何给它固定高度有2种方式 */
         /* 一种是使用cacul给它进行计算 */
         /* 另一种方式是通过定位 */
-        height: calc(100% - 44px);
+        height: calc(100% - 93px);
+        /* 以前是100%-44px的 */
+        /* height: calc(100% - 44px - 49px);这样写不行 */
     }
 
     .detail-nav{

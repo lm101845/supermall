@@ -1,4 +1,5 @@
 <template>
+<!-- 这个不是立即更新的，它需要渲染一会儿 -->
   <div class="param-info" v-if="Object.keys(paramInfo).length !== 0">
     <table v-for="(table, index) in paramInfo.sizes"
            class="info-size" :key="index">
