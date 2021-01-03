@@ -9,7 +9,7 @@
             <detail-swiper :top-images="topImages"/>
             <detail-base-info :goods="goods"></detail-base-info>
             <detail-shop-info :shop="shop"></detail-shop-info>
-            <detail-goods-info :detail-info='detailInfo'></detail-goods-info>
+            <detail-goods-info :detail-info='detailInfo' @imageLoad="imageLoad"></detail-goods-info>
             <detail-param-info :param-info="paramInfo"></detail-param-info>
             <detail-comment-info :comment-info="commentInfo"></detail-comment-info>
             <goods-list :goods="recommends"></goods-list>
@@ -63,8 +63,9 @@ export default {
           paramInfo:{},
           commentInfo:{},
           recommends:[],
-        //itemImgListener:null
-        //itemImgListener属性Home.vue里面也有，所以也把它进行混入
+         //itemImgListener:null,
+         //itemImgListener属性Home.vue里面也有，所以也把它进行混入
+         // refresh:null
         }
     },
     created(){
@@ -103,14 +104,18 @@ export default {
                 this.commentInfo = data.rate.list[0]
             }
         })
-
+        
+        // 3.请求推荐数据
         getRecommend().then(res=>{
             // console.log(res);
             this.recommends = res.data.list
         })
+
+        // 4.监听详情图片加载完成
+
     },
     mounted() {
-      console.log('mounted');
+    //   console.log('mounted');
     },
     // deactivated() {
     // 不能在这里取消 
@@ -123,7 +128,9 @@ export default {
     },
     methods:{
         imageLoad(){
-            this.$refs.scroll.refresh()
+            // this.$refs.scroll.refresh()
+            // 但是这样调用的话会比较频繁，我们这里要做一个防抖
+            this.refresh()
         }
     }
 }

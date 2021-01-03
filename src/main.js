@@ -1,3 +1,5 @@
+// main.js作为入口应该让它尽可能简单
+
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'

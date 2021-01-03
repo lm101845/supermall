@@ -64,7 +64,7 @@ import RecommendView from './childComps/RecommendView'
 import FeatureView from './childComps/FeatureView'
 
 import NavBar from "components/common/navbar/NavBar";
-import TabControl from "components/content/tabControl/TabControl"
+import TabControl from 'components/content/tabControl/TabControl'
 import GoodList from 'components/content/goods/GoodsList'
 import Scroll from 'components/common/scroll/Scroll'
 import BackTop from 'components/content/backTop/BackTop'
@@ -238,6 +238,9 @@ export default {
     // console.log(this.$refs.tabControl.$el.offsetTop);
     // 但是这里拿到的offsetTop是不准确的，没有包含图片加载完后的高度
     // this.tabOffsetTop = this.$refs.tabControl
+
+    // 3.手动代码点击一次
+    this.tabClick(0)
   },
   
 
@@ -272,10 +275,13 @@ export default {
             // 因为我们现在没有其他情况，写不写default都可以
             break
         }
-        // this.$refs.TabControl1.currentIndex = index;
-        // this.$refs.TabControl2.currentIndex = index;
+        if(this.$refs.TabControl1 !== undefined){
+          this.$refs.TabControl1.currentIndex = index;
+          this.$refs.TabControl2.currentIndex = index;
+        }
         // 这2行代码主要用于：点击新款时往上拉还是显示新款
         // 但是我写了会报错，显示没有设置currentIndex,我先不写吧
+        // 问题找到了：是生命周期的问题
       },
       backClick(){
         // console.log('backClick');
@@ -349,7 +355,6 @@ export default {
             // 完成上拉加载更多
             // this.$refs.scroll
             // 但是我们不会在这里写，会封装一个函数
-
             this.$refs.scroll.finishPullUp()
         })
      }

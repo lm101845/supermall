@@ -21,7 +21,10 @@
 		name: "DetailGoodsInfo",
     props: {
       detailInfo: {
-        type: Object
+        type: Object,
+        default(){
+          return {}
+        }
       }
     },
     data() {
@@ -33,8 +36,10 @@
     methods: {
 	    imgLoad() {
         // 判断, 所有的图片都加载完了, 那么进行一次回调就可以了.
+        // console.log('-----------');
         if (++this.counter === this.imagesLength) {
           this.$emit('imageLoad');
+          // 这里使用事件总线也行($bus)
         }
 	    }
     },
