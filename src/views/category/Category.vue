@@ -11,7 +11,7 @@
 </template>
  
 <script>
-  // import BScroll from 'better-scroll'
+  import BScroll from 'better-scroll'
   // 以后会对这个第三方插件进行封装的，主要是担心你以后不更新了怎么办
   import {backTopMixin} from 'common/mixin'
   export default {

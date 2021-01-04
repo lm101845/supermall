@@ -11,6 +11,12 @@
                 @scroll="contentScroll" 
                 :probe-type="3">
             <!-- scroll必须要有固定的高度 -->
+            <!-- <div>{{$store.state.cartList.length}}</div> -->
+            <!-- <ul>
+                <li v-for="item in $store.state.cartList">
+                    {{item}}
+                </li>
+            </ul> -->
             <detail-swiper :top-images="topImages"/>
             <detail-base-info :goods="goods"></detail-base-info>
             <detail-shop-info :shop="shop"></detail-shop-info>
@@ -20,9 +26,8 @@
             <goods-list :goods="recommends" ref="recommend"></goods-list>
         </scroll>
         <!-- <h2>详情页：{{iid}}</h2> -->
-        <detail-bottom-bar></detail-bottom-bar>
+        <detail-bottom-bar @addToCart="addToCart"></detail-bottom-bar>
         <back-top @click.native="backTop" v-show="isShowBackTop"/>
-
     </div>
 </template>
 
@@ -272,6 +277,26 @@ export default {
             // // 你要真想抽的话，可以在这里再弄一个函数，叫做demo
             //     this.isShowBackTop = -position.y > 1000
             // }
+        addToCart(){
+            // console.log('父组件');
+            // 1.获取购物车需要展示的信息
+            const product = {}
+            product.image = this.topImages[0]
+            product.title = this.goods.title;
+            product.desc = this.goods.desc;
+            // product.price = this.DetailGoodsInfo.newPrice;
+            // 不要用newPrice,这个价格是一个区间
+            product.price = this.goods.newPrice;
+            product.iid = this.iid
+            // 记住：iid一定要传过去，商品的唯一标识，说明顾客到底买了哪个商品
+
+            // 2.将商品添加到购物车中
+            // this.$store.cartList.push(product)
+            // 虽然可以添加，但是不要这样来做
+            // 修改任何state里面的东西都要通过mutation
+            // this.$store.commit('addToCart',product)
+            this.$store.dispatch('addToCart',product)
+        }
     }
 }
 </script>
