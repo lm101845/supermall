@@ -13,7 +13,8 @@ export default {
             // 多做一步，操作是可以跟踪的
         },
         // addToCart(state, payload) { 
-       addToCart(state, payload) { 
+    addToCart(state, payload) { 
+            payload.checked = true
             state.cartList.push(payload)
         }
 }

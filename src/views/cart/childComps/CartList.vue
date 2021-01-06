@@ -13,7 +13,7 @@
 <script>
   import Scroll from 'components/common/scroll/Scroll'
   import CartListItem from './CartListItem'
-  import { mapGetters } from 'vuex'
+  // import { mapGetters } from 'vuex'
 
 	export default {
 		name: "CartList",
@@ -21,8 +21,16 @@
       Scroll,
       CartListItem
     },
-    computed:{
-      ...mapGetters(['cartList'])
+    // computed:{
+    //   ...mapGetters(['cartList'])
+    // },
+     props: {
+		  cartList: {
+		    type: Array,
+        default() {
+		      return []
+        }
+      }
     },
     activated() {
       // console.log('---------');
@@ -32,11 +40,11 @@
 </script>
 
 <style scoped>
-  .cart-list{
-    height: calc(100% - 44px);
+  /* .cart-list{
+    height: calc(100%-93px-40px);
   }
   .content{
     height: 100%;
     overflow: hidden;
-  }
+  } */
 </style>

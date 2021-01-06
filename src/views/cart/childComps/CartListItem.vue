@@ -1,7 +1,7 @@
 <template>
   <div id="shop-item">
     <div class="item-selector">
-      <CheckButton></CheckButton>
+      <CheckButton @checkBtnClick="checkedChange" v-model="itemInfo.checked"></CheckButton>
     </div>
     <div class="item-img">
       <img :src="itemInfo.image" alt="商品图片">
@@ -10,7 +10,7 @@
       <div class="item-title">{{itemInfo.title}}</div>
       <div class="item-desc">商品描述: {{itemInfo.desc}}</div>
       <div class="info-bottom">
-        <div class="item-price left">{{itemInfo.price}}</div>
+        <div class="item-price left">¥{{itemInfo.newPrice}}</div>
         <!-- 这个价格有问题啊 -->
         <div class="item-count right">x{{itemInfo.count}}</div>
       </div>
@@ -19,7 +19,8 @@
 </template>
 
 <script>
-import CheckButton from 'components/content/checkButton/CheckButton'
+  import CheckButton from './CheckButton'
+
   export default {
    name:'CartListItem',
    components:{
@@ -32,7 +33,12 @@ import CheckButton from 'components/content/checkButton/CheckButton'
          return {}
        }
      }
-   }
+   },
+   methods: {
+     checkedChange: function () {
+        this.itemInfo.checked = !this.itemInfo.checked;
+      }
+   },
   }
 </script>
 
@@ -46,7 +52,7 @@ import CheckButton from 'components/content/checkButton/CheckButton'
   }
 
   .item-selector {
-    width: 14%;
+    width: 14px;
     display: flex;
     justify-content: center;
     align-items: center;

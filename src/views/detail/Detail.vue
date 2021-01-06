@@ -286,7 +286,7 @@ export default {
             product.desc = this.goods.desc;
             // product.price = this.DetailGoodsInfo.newPrice;
             // 不要用newPrice,这个价格是一个区间
-            product.price = this.goods.newPrice;
+            product.newPrice = this.goods.nowPrice;
             product.iid = this.iid
             // 记住：iid一定要传过去，商品的唯一标识，说明顾客到底买了哪个商品
 

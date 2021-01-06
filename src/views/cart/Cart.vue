@@ -1,31 +1,36 @@
 <template>
   <div class="cart">
     <nav-bar class="nav-bar">
-      <div slot="center">购物车({{$store.state.cartList.length}})</div>
-      <!-- <div slot="center">购物车({{cartLength}})</div> -->
+      <div slot="center">购物车({{cartCount}})</div>
+      <!-- <div slot="center">购物车({{$store.state.cartList.length}})</div> -->
       <!-- <div slot="center">购物车({{length}})</div> -->
       <!-- 你不想叫cartLength，想叫length也行的 -->
     <!-- navbar是我们自定义的组件，而且这个组件里面有很多插槽 -->
     </nav-bar>
 
     <!-- 商品的列表 -->
-    <cart-list></cart-list>
+    <cart-list class="cart-list" :cart-list="cartList"></cart-list>
 
     <!-- 底部汇总 -->
-
+    <bottom-bar></bottom-bar>
   </div>
 </template>
 
 <script>
   import NavBar from 'components/common/navbar/NavBar'
-  import { mapGetters } from 'vuex'
+
   import CartList from './childComps/CartList'
+  import BottomBar from './childComps/BottomBar'
+
+
+  // import { mapGetters } from 'vuex'
 
   export default {
     name: "Cart",
     components:{
       NavBar,
-      CartList
+      CartList,
+      BottomBar
     },
     computed:{
       // cartLength(){
@@ -41,10 +46,17 @@
       // ...mapGetters(['cartLength','cartList'])
 
       //语法2：写对象，也是一一对应的关系，但是名字可以自定义
-      ...mapGetters({
-        length:'cartLength',
-        list:'cartList'
-      })
+      // ...mapGetters({
+      //   length:'cartLength',
+      //   list:'cartList'
+      // })
+
+       cartList() {
+		    return this.$store.getters.cartList
+      },
+      cartCount() {
+		    return this.$store.getters.cartCount
+      }
     }
   }
 </script>
@@ -58,5 +70,12 @@
     color: #fff;
     /* font-weight: 700; */
     /* 不加粗还好看一点 */
+  }
+
+  .cart-list {
+    position: absolute;
+    top: 44px;
+    bottom: 49px;
+    width: 100%;
   }
 </style>

@@ -1,6 +1,10 @@
 <template>
   <div class="bottom-menu">
     <CheckButton class="select-all" @checkBtnClick="checkBtnClick" v-model="isSelectAll"></CheckButton>
+    <!-- <check-button :is-checked="isSelectAll" 
+                   class="select-all">
+                   @click.native="checkBtnClick">
+    </check-button> -->
     <span>全选</span>
     <span class="total-price">合计: ¥{{totalPrice}}</span>
     <span class="buy-product">去计算({{$store.getters.cartCount}})</span>
@@ -24,12 +28,34 @@
           return preValue + item.count * item.newPrice
         }, 0).toFixed(2)
       },
-      isSelectAll: function () {
+      // checkLength(){
+      //   return this.$store.getters.cartList.find(item=>item.checked).length
+      //   // return this.cartList.filter(item => item.checked).length
+      // },
+      isSelectAll() {
+        // return this.$store.getters.cartList.find(item => item.checked === false) === undefined;
+        // if(this.$store.getters.cartList.length === 0) return false
+        // 1.使用find函数
+        // return !this.$store.getters.cartList.find(item => !item.checked)
+
+        // 2.使用filter
+        // return !(this.$store.getters.cartList.filter(item => !item.checked).length);
+        // 这个性能不算特别好
+
+        // 3.普通遍历
+        // for(let item of this.$store.getters.cartList){
+        //   if(!item.checked){
+        //     return false
+        //   }
+        // }
+        // return true
+
         return this.$store.getters.cartList.find(item => item.checked === false) === undefined;
+
       }
     },
     methods: {
-      checkBtnClick: function () {
+      checkBtnClick() {
         // 1.判断是否有未选中的按钮
         let isSelectAll = this.$store.getters.cartList.find(item => !item.checked);
 
