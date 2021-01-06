@@ -28,6 +28,8 @@
         <!-- <h2>详情页：{{iid}}</h2> -->
         <detail-bottom-bar @addToCart="addToCart"></detail-bottom-bar>
         <back-top @click.native="backTop" v-show="isShowBackTop"/>
+        <!-- <toast :message="message" :show="show"></toast> -->
+        <!-- 如果直接传字符串的话是可以不用加这个冒号的 -->
     </div>
 </template>
 
@@ -53,7 +55,10 @@ import {debounce} from 'common/utils'
 import {itemListenerMixin,backTopMixin} from 'common/mixin'
 // import {BACK_POSITION} from 'common/const'
 
+import {mapActions} from 'vuex'
 
+// import Toast from 'components/common/toast/Toast'
+// 到时候再删
 export default {
     name: 'Detail',
     // 怎么能够拿到iid呢？
@@ -69,6 +74,7 @@ export default {
     DetailBottomBar,
     Scroll,
     GoodsList,
+    // Toast
     // BackTop
     },
     mixins:[itemListenerMixin,backTopMixin],
@@ -91,7 +97,8 @@ export default {
          getThemeTopY:null,
          currentIndex:0,
         //  isShowBackTop: false,  放到mixin里面
-
+         message:'',
+         show:false
         }
     },
     created(){
@@ -208,6 +215,8 @@ export default {
         this.$bus.$off('itemImageLoad',this.itemImgListener)
     },
     methods:{
+        ...mapActions(['addToCart']),
+        // 告诉它我们要映射这个函数
         imageLoad(){
             // this.$refs.scroll.refresh()
             // 但是这样调用的话会比较频繁，我们这里要做一个防抖
@@ -291,11 +300,34 @@ export default {
             // 记住：iid一定要传过去，商品的唯一标识，说明顾客到底买了哪个商品
 
             // 2.将商品添加到购物车中
+            // 2个知识点：Promise、mapActions
             // this.$store.cartList.push(product)
             // 虽然可以添加，但是不要这样来做
             // 修改任何state里面的东西都要通过mutation
             // this.$store.commit('addToCart',product)
-            this.$store.dispatch('addToCart',product)
+            // this.$store.dispatch('addToCart',product)
+            this.$store.dispatch('addToCart',product).then(res=>{
+            // this.addToCart(product).then(res=>{
+                // console.log(res);
+                //你现在只是把这句话给打印了出来，我们需要你做的是把这句话给显示出来
+                // 我们这里以toast方式进行显示
+                // this.show = true
+                // this.message = res
+
+                // setTimeout(()=>{
+                //     this.show = false;
+                //     this.message = ''
+                //     // 把内容也清空一下
+                // },1500)
+            // dispacth会返回一个promise
+
+            // 3.添加到购物车成功
+            // 但是这里写不好
+            // 不是你一点击按钮就添加到购物车成功了，还要里面要完成一系列操作
+            // console.log(this.$toast);
+            this.$toast.show(res,1000)
+            // 是没有$toast的，到时候再封装啊
+            })
         }
     }
 }

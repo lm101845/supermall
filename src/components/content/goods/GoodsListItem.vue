@@ -2,7 +2,8 @@
     <div class="goods-item" @click="itemClick">
       <!-- 这个根上点击就跳转到详情页 -->
         <!-- <img :src="goodsItem.show.img" alt="" @load="imageLoad"> -->
-        <img :src="showImage" alt="" @load="imageLoad">
+        <!-- <img :src="showImage" alt="" @load="imageLoad"> -->
+        <img v-lazy="showImage" alt="" @load="imageLoad">
         <!-- goodsItem我写成了goodsItme，找了快半个小时错。。。 -->
         <div class="goods-info">
             <p>{{goodsItem.title}}</p>
