@@ -21,7 +21,7 @@ module.exports = {
         }
     },
     lintOnSave: false,
-    publicPath: process.env.NODE_ENV=== 'production' ? 'supermall' : '/',
+    // publicPath: process.env.NODE_ENV=== 'production' ? 'supermall' : '/',
     // outputDir:'dist',
     // assetsPublicPath:'./'
 }
